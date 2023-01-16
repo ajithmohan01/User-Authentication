@@ -1,0 +1,306 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contacts {
+  id            String          @id @default(uuid())
+  name          String
+  email         String
+  phone         Int
+  createdAt     DateTime        @default(now())
+  customer      Customer[]
+  plantlocation Plantlocation[]
+
+  @@map("contacts")
+}
+
+model Customer {
+  id                  String           @id @default(uuid())
+  name                String
+  email               String
+  phone               Int
+  address             String
+  city                String
+  state               String
+  country             String
+  zipcode             String
+  primarycontact_id   String
+  primarycontact      Contacts         @relation(fields: [primarycontact_id], references: [id])
+  secondarycontact_id String
+  deleted_at          DateTime ?
+  is_deleted          Boolean             @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @default(now())
+  user                User[]
+  plantlocation       Plantlocation[]
+  system              System[]
+  version             Version[]
+  version_history     VersionHistory[]
+  stages              Stages[]
+  @@map("customer")
+}
+
+model Role {
+  id         String   @id @unique @default(uuid())
+  role_name  String
+  created_at DateTime @default(now())
+  user       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id              String              @id @unique @default(uuid())
+  firstname       String
+  lastname        String
+  email           String              @unique
+  phone           Int
+  password        String
+  role_id         String
+  role            Role                @relation(fields: [role_id], references: [id])
+  address         String
+  city            String
+  state           String
+  country         String
+  zipcode         String
+  customer_id     String
+  customer        Customer            @relation(fields: [customer_id], references: [id])
+  created_at      DateTime            @default(now())
+  updated_at      DateTime ?
+  is_deleted      Boolean             @default(false)
+  deleted_at      DateTime ?
+  system          System[]
+  plantlocation   Plantlocation[]
+  enggObj         EngineeringObject[]
+  version         Version[]
+  version_history VersionHistory[]
+  versionComments VersionComments[]
+  stageHistory    StageHistory[]
+  stages          Stages[]
+
+  @@map(name: "user")
+}
+
+model Plantlocation {
+  id                  String           @id @default(uuid())
+  plant_name          String
+  location            String
+  primarycontact_id   String
+  primarycontact      Contacts         @relation(fields: [primarycontact_id], references: [id])
+  secondarycontact_id String
+  customer_id         String           
+  customer            Customer         @relation(fields: [customer_id], references: [id])
+  created_at          DateTime         @default(now())
+  created_by          String
+  user                User             @relation(fields: [created_by], references: [id])
+  updated_at          DateTime ?
+  is_deleted          Boolean          @default(false)
+  deleted_at          DateTime ?       
+  version             Version[]
+ system              System[]
+  version_history     VersionHistory[]
+
+  @@map(name: "plantlocation")
+}
+
+model System {
+  id              String           @id @default(uuid())
+  system_name     String
+  customer_id     String
+  customer        Customer         @relation(fields: [customer_id], references: [id])
+  created_at      DateTime         @default(now())
+  location_id     String           
+  location        Plantlocation         @relation(fields: [location_id], references: [id])
+  created_by      String
+  user            User             @relation(fields: [created_by], references: [id])
+  updated_at      DateTime ?
+  is_deleted      Boolean          @default(false)
+  deleted_at      DateTime ?
+ version         Version[]
+  version_history VersionHistory[]
+
+  @@map(name: "system")
+}
+
+model Type {
+  id         String              @id @default(uuid())
+  name       String
+  created_at DateTime            @default(now())
+  enggObj    EngineeringObject[]
+  subtype    SubType[]
+  make       Make[]
+
+  @@map(name: "engineering_type")
+}
+model SubType {
+  id         String              @id @default(uuid())
+  name       String
+  created_at DateTime            @default(now())
+  enggObj    EngineeringObject[]
+  make       Make[]
+  type_id    String
+  type       Type                @relation(fields: [type_id], references: [id])
+
+  @@map(name: "engineering_subtype")
+}
+model Make {
+  id         String              @id @default(uuid())
+  name       String
+  created_at DateTime            @default(now())
+  type_id    String
+  type       Type                @relation(fields: [type_id], references: [id])
+  subtype_id String
+  subtype    SubType             @relation(fields: [subtype_id], references: [id])
+  enggObj    EngineeringObject[]
+  model      Model[]
+
+  @@map(name: "engineering_make")
+}
+
+model Model {
+  id         String              @id @default(uuid())
+  name       String
+  created_at DateTime            @default(now())
+  make_id    String
+  make       Make                @relation(fields: [make_id], references: [id])
+  enggObj    EngineeringObject[]
+
+  @@map(name: "engineering_model")
+}
+
+model Units {
+  id         String   @id @default(uuid())
+  name       String
+  value      String
+  created_at DateTime @default(now())
+  is_deleted     Boolean
+  deleted_at     DateTime ?
+
+  @@map(name: "engineering_units")
+}
+
+model EngineeringObject {
+  id            String   @id @default(uuid())
+  name          String
+  displayName   String
+  shape         Int
+  componentjson String
+  type_id       String
+  type          Type     @relation(fields: [type_id], references: [id])
+  subtype_id    String
+  subtype       SubType  @relation(fields: [subtype_id], references: [id])
+  make_id       String
+  make          Make     @relation(fields: [make_id], references: [id])
+  model_id      String
+  model         Model    @relation(fields: [model_id], references: [id])
+  created_at    DateTime @default(now())
+  created_by    String
+  user          User     @relation(fields: [created_by], references: [id])
+  updated_at    DateTime ?
+  is_deleted    Boolean   @default(false)
+  deleted_at    DateTime ?
+
+  @@map(name: "engineering_object")
+}
+
+model Version {
+  id              String           @id @default(uuid())
+  name            String
+  datafromjson    String
+  component_json  String
+  bg_image        String
+  edit_lock       Boolean          @default(false)
+  customer_id     String
+  customer        Customer         @relation(fields: [customer_id], references: [id])
+  plant_loc_id    String
+  Plant_location  Plantlocation    @relation(fields: [plant_loc_id], references: [id])
+  system_id       String
+  system          System    @relation(fields: [system_id], references: [id])
+  created_at      DateTime         @default(now())
+  created_by      String
+  user            User             @relation(fields: [created_by], references: [id])
+  updated_at      DateTime ?
+  is_deleted      Boolean         @default(false)
+  deleted_at      DateTime ?
+  version_history VersionHistory[]
+  version_comments VersionComments[]
+  stageHistory    StageHistory[]
+  @@map(name: "drawing_version")
+}
+
+model VersionHistory {
+  id             String        @id @default(uuid())
+  name           String
+  datafromjson   String
+  component_json String
+  system_id      String
+  system         System        @relation(fields: [system_id], references: [id])
+  version_id     String
+  version        Version       @relation(fields: [version_id], references: [id])
+  customer_id    String
+  customer       Customer      @relation(fields: [customer_id], references: [id])
+  plant_loc_id   String
+  Plant_location Plantlocation @relation(fields: [plant_loc_id], references: [id])
+  created_at     DateTime      @default(now())
+  created_by     String
+  updated_by     String
+  user           User          @relation(fields: [created_by], references: [id])
+  updated_at     DateTime
+  is_deleted     Boolean
+  deleted_at     DateTime
+
+  @@map(name: "version_history")
+}
+
+
+model VersionComments{
+  id             String        @id @default(uuid())
+  comments       String
+  version_id     String
+  version        Version       @relation(fields: [version_id], references: [id]) 
+  created_at     DateTime      @default(now())
+  created_by     String
+  user           User          @relation(fields: [created_by], references: [id])
+  is_deleted     Boolean
+  deleted_at     DateTime ?
+
+  @@map(name: "version_comments")
+}
+
+model StageHistory{
+  id             String        @id @default(uuid())
+  from_stage_id  String
+  to_stage_id    String
+  version_id     String
+  version        Version       @relation(fields: [version_id], references: [id])
+  created_at     DateTime      @default(now())
+  created_by     String
+  user           User          @relation(fields: [created_by], references: [id])
+  is_deleted     Boolean
+  deleted_at     DateTime ?
+
+  @@map(name: "stage_history")
+}
+
+model Stages{
+  id             String        @id @default(uuid())
+  stage          String
+  user_id        String
+  user           User          @relation(fields: [user_id], references: [id])
+  customer_id    String
+  customer       Customer      @relation(fields: [customer_id], references: [id])
+  created_at     DateTime      @default(now())
+  is_deleted     Boolean
+  deleted_at     DateTime ?
+
+  @@map(name: "stages")
+}
+
