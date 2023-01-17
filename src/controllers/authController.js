@@ -19,14 +19,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
-//  NOT YET CONFORIMED
 
-// router.post("/refreshtoken", async (req, res) => {
-//   try {
-//     authServices.refreshToken(req, res);
-//   } catch (error) {
-//     res.json({ error: error.message });
-//   }
-// });
+router.post("/refreshtoken", async (req, res) => {
+  try {
+    authServices.refreshToken(req, res);
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
 
 export default router;

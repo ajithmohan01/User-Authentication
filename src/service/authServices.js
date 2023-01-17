@@ -36,18 +36,18 @@ class AuthServices {
     });
   };
 
-  //NOT YET CONFIRMED
+ 
 
-  // async refreshToken(req, res) {
-  //   const token = req.cookies.refreshToken;
-  //   if (!token) return res.json({ message: "missing access token" });
-  //   const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-  //   const user = await this.findUserById(payload.id);
-  //   if (!user) return res.json({ message: "no user found" });
-  //   const { accessToken, refreshToken } = generateTokens(user);
-  //   res.cookie("refreshToken", refreshToken);
-  //   res.json({ accessToken });
-  // }
+  async refreshToken(req, res) {
+    const token = req.cookies.refreshToken;
+    if (!token) return res.json({ message: "missing access token" });
+    const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const user = await this.findUserById(payload.id);
+    if (!user) return res.json({ message: "no user found" });
+    const { accessToken, refreshToken } = generateTokens(user);
+    res.cookie("refreshToken", refreshToken);
+    res.json({ accessToken });
+  }
 
   findUserById = (id) => {
     return db.user.findUnique({

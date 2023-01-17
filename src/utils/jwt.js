@@ -11,18 +11,20 @@ export const generateAccessToken =(user)=>{
   });
 }
 
-// export const generateRefreshToken=(user)=>{
-//   return jwt.sign({
-//     id: user.id,
-//   }, process.env.JWT_REFRESH_SECRET, {
-//     expiresIn: '4h',
-//   });
-// }
+export const generateRefreshToken=(user)=>{
+  return jwt.sign({
+    id: user.id,
+  }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: '4h',
+  });
+}
 
 export const generateTokens=(user)=>{
   const accessToken = generateAccessToken(user);
+  const  refreshToken= generateAccessToken(user);
   return {
     accessToken,
+    refreshToken
   };
 }
 
